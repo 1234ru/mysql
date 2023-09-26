@@ -1,0 +1,9 @@
+{
+  "name": "one234ru/mysql",
+  "description": "Simple PHP library for basic MySQL/MariaDB operations",
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=8.1",
+    "ext-mysqli": "*"
+  }
+}
