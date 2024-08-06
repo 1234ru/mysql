@@ -335,7 +335,8 @@ class MySQL
 
 
     /**
-     * $key, $value --> `$key` = '$value'.
+     * $key, $value -> "`$key` = '$value'"
+     *
      * Заменяет пару ключ-значение на SQL-выражение для записи.
      * Варианты:
      *  - 'поле', не массив - обычный случай
@@ -344,7 +345,7 @@ class MySQL
      */
     private function assignment(
         string $key,
-        string|int|float|bool|array|null $value
+        string|int|float|bool|array|null|object $value
     ) :string {
         if (!str_contains($key, '.')) {
             $column_name = $key;
@@ -428,13 +429,16 @@ class MySQL
     public function insertOnDuplicateKeyUpdate(
         string $table_name,
                $data,
-        array  $unique_keys = [ 'id' ],
+        array|string $unique_keys = [ 'id' ],
         int $error_level = \E_USER_WARNING,
     )
     {
         $to_update = array_diff_key(
             $data,
-            array_fill_keys($unique_keys, true)
+            array_fill_keys(
+                is_array($unique_keys) ? $unique_keys : [ $unique_keys ],
+                true
+            )
         );
         $sql = "INSERT INTO $table_name SET\n"
             . $this->assignValues($data) . "\n"
