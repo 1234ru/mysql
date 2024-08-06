@@ -118,7 +118,7 @@ class MySQL
         }
     }
 
-    private function substitute(
+    public function substitute(
         string $sql_string,
         array $substitutions
     ) :string {
@@ -142,7 +142,7 @@ class MySQL
             if (is_array($value)) {
                 $escaped = implode(
                     ',',
-                    array_map(__FUNCTION__, $value)
+                    array_map([$this, __FUNCTION__], $value)
                 );
                 // В качестве массивов могут быть не только JSON-поля,
                 // но и множество значений фильтра для IN,
@@ -161,25 +161,31 @@ class MySQL
                 ) {
                     $value = $value->format('Y-m-d H:i:s');
                 }
-                if (is_string($value)) {
-                    // Через объект текущего соединения
-                    // получается его кодировка,
-                    // поэтому метод не статический.
-                    $escaped = "'"
-                        . $this->mysqli->real_escape_string($value)
-                        . "'";
-                } elseif (is_numeric($value)) {
-                    $escaped = strval($value);
-                } elseif (is_null($value)) {
-                    $escaped = 'NULL';
-                } else {
-                    $escaped = strval(intval($value));
-                }
+                $escaped = $this->escapeScalarValue($value);
             }
         } else {
-            $method = __FUNCTION__;
             $json_string = json_encode($value, JSON_UNESCAPED_UNICODE);
-            $escaped = $this->$method($json_string);
+            $escaped = $this->escapeScalarValue($json_string);
+        }
+        return $escaped;
+    }
+
+    /** Keeps value type. */
+    private function escapeScalarValue(int|string|bool|null $value) :string
+    {
+        if (is_string($value)) {
+            // Через объект текущего соединения
+            // получается его кодировка,
+            // поэтому метод не статический.
+            $escaped = "'"
+                . $this->mysqli->real_escape_string($value)
+                . "'";
+        } elseif (is_numeric($value)) {
+            $escaped = strval($value);
+        } elseif (is_null($value)) {
+            $escaped = 'NULL';
+        } else {
+            $escaped = strval(intval($value));
         }
         return $escaped;
     }
@@ -199,8 +205,8 @@ class MySQL
 
     public function getTable(
         string $sql_string,
+        ?array $substitutions = [],
         ?string $column_for_keys = '',
-        ?array $substitutions = []
     ) :array {
         $result = $this->q($sql_string, $substitutions);
         if ($result) {
@@ -221,7 +227,7 @@ class MySQL
         string $sql_string,
         ?array $substitutions = []
     ) :array {
-        $rows = $this->getTable($sql_string, '', $substitutions);
+        $rows = $this->getTable($sql_string, $substitutions);
         foreach ($rows as $row) {
             $column[] = reset($row);
         }
@@ -245,7 +251,7 @@ class MySQL
         string $sql_string,
         ?array $substitutions = []
     ) :array {
-        $rows = $this->getTable($sql_string, '', $substitutions);
+        $rows = $this->getTable($sql_string, $substitutions);
         $row = reset($rows);
         return $row ?: [];
     }
@@ -409,5 +415,37 @@ class MySQL
         return $sql_string;
     }
 
+    /**
+     * @param string[] $unique_keys
+     * @param $data = [
+     *     'column_name' => 'value',
+     * ]
+     * @return = [
+     *     'new_id' => int|null,
+     *     'affected_rows' => int,
+     * ]
+     */
+    public function insertOnDuplicateKeyUpdate(
+        string $table_name,
+               $data,
+        array  $unique_keys = [ 'id' ],
+        int $error_level = \E_USER_WARNING,
+    )
+    {
+        $to_update = array_diff_key(
+            $data,
+            array_fill_keys($unique_keys, true)
+        );
+        $sql = "INSERT INTO $table_name SET\n"
+            . $this->assignValues($data) . "\n"
+            . "ON DUPLICATE KEY UPDATE\n"
+            . $this->assignValues($to_update)
+            ;
+        $this->q($sql, [], $error_level);
+        return [
+            'new_id' => $this->mysqli->insert_id,
+            'affected_rows' => $this->mysqli->affected_rows,
+        ];
+    }
 
 }

@@ -1,9 +1,20 @@
 {
   "name": "one234ru/mysql",
-  "description": "Simple PHP library for basic MySQL/MariaDB operations",
+  "description": "Simple low-level library for work with MySQL/MariaDB",
   "minimum-stability": "stable",
+  "authors": [
+    {
+      "name": "1234ru",
+      "email": "1234ru@gmail.com"
+    }
+  ],
   "require": {
     "php": ">=8.1",
     "ext-mysqli": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "One234ru\\": "./"
+    }
   }
 }
