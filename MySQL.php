@@ -4,6 +4,7 @@ namespace One234ru;
 
 class MySQL
 {
+    private const MYSQL_DATETIME_FORMAT = 'Y-m-d H:i:s';
     private \mysqli $mysqli;
 
     /**
@@ -159,7 +160,7 @@ class MySQL
                         is_subclass_of($value, 'DateTime')
                     )
                 ) {
-                    $value = $value->format('Y-m-d H:i:s');
+                    $value = $value->format(self::MYSQL_DATETIME_FORMAT);
                 }
                 $escaped = $this->escapeScalarValue($value);
             }
@@ -450,6 +451,14 @@ class MySQL
             'new_id' => $this->mysqli->insert_id,
             'affected_rows' => $this->mysqli->affected_rows,
         ];
+    }
+
+    public static function convertDBDateStringToObject($date_string)
+    {
+        return \DateTime::createFromFormat(
+            self::MYSQL_DATETIME_FORMAT,
+            $date_string
+        );
     }
 
 }
