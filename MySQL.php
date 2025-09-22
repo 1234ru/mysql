@@ -453,11 +453,12 @@ class MySQL
         ];
     }
 
-    public static function convertDBDateStringToObject($date_string)
-    {
+    public static function convertDBDateStringToObject(
+        mixed $date_string
+    ) :\DateTime|bool {
         return \DateTime::createFromFormat(
             self::MYSQL_DATETIME_FORMAT,
-            $date_string
+            (string) $date_string
         );
     }
 
