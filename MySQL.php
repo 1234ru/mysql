@@ -303,8 +303,8 @@ class MySQL
 
     public function updateRowById(
         string $table_name,
-        array $data_to_update,
         int|string $id_value,
+        array $data_to_update,
         string $id_column_name = 'id',
         int $error_level = \E_USER_WARNING
     )
