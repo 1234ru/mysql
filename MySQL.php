@@ -382,7 +382,8 @@ class MySQL
             // (с экранированными внутри кавычками)
             $column_name_quoted = $this->quoteAndEscape($column_name);
             $sql_string = $column_name_quoted
-                . "JSON_SET(IFNULL(`$column_name_quoted`, '{}'), '\$$path', ";
+                . " = "
+                . "JSON_SET(IFNULL($column_name_quoted, '{}'), '\$$path', ";
             $sql_string .= (!is_array($value))
                 ? $this->prepareValueForSQLstring($value)
                 : "JSON_EXTRACT(" . $this->prepareValueForSQLstring($value, true) . ", '$')";

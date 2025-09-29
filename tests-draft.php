@@ -56,3 +56,13 @@ $row_with_json = [
 ////$data = [ 'id' => 53 ];
 //var_export($db->updateRowById('t2', $data, 5));
 
+
+// https://webew.ru/articles/3237.webew#json-write
+// CREATE TABLE t (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, data JSON)
+// INSERT INTO t (id) VALUES (4)
+$db->updateRowById(
+    't',
+    [ 'data.somebranch' => [ 'something'] ],
+    4
+);
+
