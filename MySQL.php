@@ -5,7 +5,7 @@ namespace One234ru;
 class MySQL
 {
     private const MYSQL_DATETIME_FORMAT = 'Y-m-d H:i:s';
-    private \mysqli $mysqli;
+    public \mysqli $mysqli;
 
     /**
      * @param $auth = [
